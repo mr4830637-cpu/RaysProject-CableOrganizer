@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAY'S PROJECT — The Cable Organizer</title>
+
+  <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nord: {
+              linen: '#F5F2EB',
+              parchment: '#ECE8DF',
+              pure: '#FFFFFF',
+              dark: '#0F0F0F',
+              charcoal: '#1A1A1A',
+              muted: '#73706A',
+              border: '#DCD7CC',
+              borderDark: '#262626'
+            }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN untuk Grafik Dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background-color: #F5F2EB;
+      color: #0F0F0F;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    h1, h2, h3, .font-serif-title {
+      font-family: 'Cormorant Garamond', serif;
+      letter-spacing: -0.015em;
+    }
+
+    .nord-card {
+      background-color: #FFFFFF;
+      border: 1px solid #DCD7CC;
+    }
+
+    .btn-nord {
+      background-color: #0F0F0F;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-nord:hover {
+      background-color: #262626;
+      color: #F5F2EB;
+    }
+
+    .btn-nord-outline {
+      background-color: transparent;
+      color: #0F0F0F;
+      border: 1px solid #0F0F0F;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 13px 26px;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-nord-outline:hover {
+      background-color: #0F0F0F;
+      color: #FFFFFF;
+    }
+
+    /* 8 MOTIF PATTERNS */
+    .pat-poppie {
+      background-color: #ffffff;
+      background-image: radial-gradient(#111 22%, transparent 22%);
+      background-size: 14px 14px;
+    }
+    .pat-midnight {
+      background-color: #1a1a1a;
+      background-image: radial-gradient(#ffffff 24%, transparent 24%);
+      background-size: 16px 16px;
+    }
+    .pat-oreo {
+      background-color: #4a2c1d;
+      background-image: radial-gradient(#f7ebe1 20%, transparent 20%);
+      background-size: 14px 14px;
+    }
+    .pat-pinkcandy {
+      background-color: #FFAEC9;
+      background-image: radial-gradient(#fff 24%, transparent 24%);
+      background-size: 16px 16px;
+    }
+    .pat-strawberry {
+      background-color: #ffffff;
+      background-image: radial-gradient(#FF3344 24%, transparent 24%);
+      background-size: 14px 14px;
+    }
+    .pat-bluemist {
+      background: repeating-linear-gradient(90deg, #A2D2FF, #A2D2FF 6px, #ffffff 6px, #ffffff 12px);
+    }
+    .pat-greenlime {
+      background: repeating-linear-gradient(90deg, #B7E4C7, #B7E4C7 6px, #ffffff 6px, #ffffff 12px);
+    }
+    .pat-honeypop {
+      background: repeating-linear-gradient(90deg, #EAD7BE, #EAD7BE 6px, #ffffff 6px, #ffffff 12px);
+    }
+
+    .fade-swap {
+      transition: opacity 0.25s ease-in-out;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-nord-dark text-nord-linen px-6 py-4 shadow-2xl flex items-center gap-3 text-xs tracking-wider border border-stone-800">
+    <span class="text-stone-400 text-sm">✦</span>
+    <span id="toastMsg" class="font-medium">Notification</span>
+  </div>
+
+  <!-- 1. TOP UTILITY ANNOUNCEMENT BAR -->
+  <div class="bg-nord-dark text-nord-linen text-[10px] tracking-[0.2em] uppercase py-2.5 px-4 border-b border-stone-800">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-center gap-1 font-medium">
+      <span id="topBarTagline">HANDMADE FROM REPURPOSED TEXTILE MATERIALS</span>
+      <span id="topBarBanner" class="text-stone-400">UPCYCLED TEXTILE ESSENTIALS • FINAL BATCH</span>
+      <span id="topBarEst" class="hidden sm:inline text-stone-400">HANDMADE // 2026</span>
+    </div>
+  </div>
+
+  <!-- 2. LUXURY EDITORIAL HEADER WITH LOGO SPACE -->
+  <header class="sticky top-0 z-40 bg-nord-linen/95 backdrop-blur-md border-b border-nord-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+      
+      <nav class="hidden md:flex items-center gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-nord-dark">
+        <button onclick="navigate('home')" id="nav-home" class="hover:text-stone-500 transition-colors">Overview</button>
+        <button onclick="navigate('shop')" id="nav-shop" class="hover:text-stone-500 transition-colors">Collection</button>
+        <button onclick="navigate('about')" id="nav-about" class="hover:text-stone-500 transition-colors">Philosophy</button>
+        <button onclick="navigate('contact')" id="nav-contact" class="hover:text-stone-500 transition-colors">Inquiries</button>
+      </nav>
+
+      <!-- Center Logo Space -->
+      <a href="javascript:void(0)" onclick="navigate('home')" class="text-center group flex flex-col items-center justify-center">
+        <div class="h-10 sm:h-12 flex items-center justify-center">
+          <img 
+            id="mainBrandLogo" 
+            src="logo.png" 
+            alt="Brand Logo" 
+            class="max-h-10 sm:max-h-12 w-auto object-contain transition-transform group-hover:scale-105"
+            onerror="this.style.display='none'; document.getElementById('logoFallbackText').style.display='block';"
+          />
+          <div id="logoFallbackText" style="display:none;" class="text-center">
+            <h1 id="navBrandName" class="font-serif text-3xl sm:text-4xl font-semibold tracking-[0.08em] text-nord-dark uppercase leading-none">
+              RAY'S PROJECT
+            </h1>
+            <span id="navTagline" class="block text-[9px] tracking-[0.3em] uppercase text-nord-muted mt-1 font-medium">Cable Organizer</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Right Utility Actions -->
+      <div class="flex items-center gap-4 sm:gap-6 text-nord-dark">
+        <button onclick="navigate('cart')" class="flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase hover:text-stone-500 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span class="hidden sm:inline">Bag</span>
+          <span id="cartCountBadge" class="text-[10px] font-bold bg-nord-dark text-nord-linen px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+
+        <button onclick="navigate('admin')" class="text-[10px] tracking-[0.15em] uppercase text-nord-muted hover:text-nord-dark transition-colors border border-nord-border px-3 py-1.5" title="Staff Portal">
+          Studio
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Sub-Navigation -->
+    <div class="flex md:hidden border-t border-nord-border bg-nord-parchment/60 px-4 py-2 justify-around text-[10px] tracking-[0.2em] font-semibold uppercase text-nord-dark">
+      <button onclick="navigate('home')">Home</button>
+      <button onclick="navigate('shop')">Shop</button>
+      <button onclick="navigate('about')">About</button>
+      <button onclick="navigate('contact')">FAQ</button>
+      <button onclick="navigate('cart')">Bag (0)</button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEW ENGINE -->
+  <main class="flex-1">
+
+    <!-- ================= PAGE 01: HOME ================= -->
+    <section id="page-home" class="page-view">
+      
+      <!-- HERO SECTION -->
+      <div class="border-b border-nord-border py-16 sm:py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div class="lg:col-span-5 space-y-8 text-left">
+            <div class="space-y-3">
+              <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">
+                [ ESSENTIAL OBJECT NO. 1 ]
+              </span>
+              <h1 class="font-serif text-5xl sm:text-6xl lg:text-7xl font-normal tracking-tight text-nord-dark leading-[0.98]">
+                MADE TO KEEP<br/>
+                <span class="italic font-normal">THINGS TOGETHER</span>
+              </h1>
+            </div>
+
+            <p class="text-xs sm:text-sm text-nord-muted leading-relaxed font-normal max-w-sm">
+              Jaga kabel dan barang-barang kecilmu tetap rapi, aman, dan mudah dibawa ke mana saja. Cable Organizer hadir sebagai solusi sederhana dan praktis untuk menemani aktivitas sehari-harimu.
+            </p>
+
+            <div class="flex items-center gap-4 pt-2">
+              <button onclick="navigate('shop')" class="btn-nord">
+                Shop Collection &rarr;
+              </button>
+              <button onclick="navigate('about')" class="btn-nord-outline">
+                Our Story
+              </button>
+            </div>
+
+            <div class="pt-8 border-t border-nord-border grid grid-cols-2 gap-6 text-[10px] tracking-[0.18em] uppercase text-nord-muted font-medium">
+              <div>
+                <span class="block text-nord-dark font-bold text-xs tracking-normal">100% Upcycled</span>
+                <span>Premium Katun Daur Ulang</span>
+              </div>
+              <div>
+                <span class="block text-nord-dark font-bold text-xs tracking-normal">Handmade Craft</span>
+                <span>Karya Tangan Presisi</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 flex justify-center lg:justify-end">
+            <div class="relative w-full max-w-lg bg-nord-pure p-6 sm:p-8 border border-nord-border shadow-sm">
+              <div class="relative z-10 aspect-square bg-[#EAE6DD] border border-nord-border overflow-hidden group">
+                <img src="awal.jpg" onerror="this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Cable Organizer Product">
+                <div class="absolute top-4 left-4 bg-nord-dark text-nord-linen text-[9px] tracking-[0.25em] font-semibold px-3 py-1 uppercase">
+                  Signature Edition
+                </div>
+              </div>
+
+              <div class="relative z-10 mt-6 flex justify-between items-baseline border-t border-nord-border pt-4">
+                <div>
+                  <h3 class="font-serif text-2xl font-normal text-nord-dark">Cable Organizer + Keychain</h3>
+                  <p class="text-[11px] text-nord-muted mt-0.5">8 Pilihan Motif Katun</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs line-through text-stone-400 block font-normal">Rp15.000</span>
+                  <span class="font-serif text-2xl text-nord-dark font-semibold">Rp12.000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2 PILAR MINIMAL -->
+      <div class="bg-nord-dark text-nord-linen py-12 border-b border-stone-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div class="flex items-start gap-5">
+            <span class="text-2xl text-stone-500 font-serif">01</span>
+            <div>
+              <h4 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-linen mb-1">Cable Organizer Only</h4>
+              <p class="text-xs text-stone-400 leading-relaxed max-w-md">Fokus kerapian esensial kabel charger & earphone dengan lapisan busa pelindung empuk.</p>
+              <button onclick="navigate('shop')" class="text-[10px] tracking-[0.18em] uppercase text-stone-300 hover:text-white mt-2 block underline underline-offset-4">Shop Cable Organizer &rarr;</button>
+            </div>
+          </div>
+          <div class="flex items-start gap-5">
+            <span class="text-2xl text-stone-500 font-serif">02</span>
+            <div>
+              <h4 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-linen mb-1">Cable Organizer Bundle</h4>
+              <p class="text-xs text-stone-400 leading-relaxed max-w-md">Paket lengkap gantungan pita mutiara & lonceng perak gemerincing yang multifungsi.</p>
+              <button onclick="navigate('shop')" class="text-[10px] tracking-[0.18em] uppercase text-stone-300 hover:text-white mt-2 block underline underline-offset-4">Explore Bundle &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTRODUCTION SECTION -->
+      <div class="py-24 border-b border-nord-border bg-nord-linen">
+        <div class="max-w-3xl mx-auto px-4 text-center space-y-4">
+          <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">THE DISCIPLINE OF ORDER</span>
+          <h2 class="font-serif text-4xl sm:text-5xl font-normal tracking-tight text-nord-dark">Keep Your Cables Neat & Stylish</h2>
+          <p class="text-sm sm:text-base text-nord-muted leading-relaxed font-normal pt-2">
+            Kabel yang berantakan sering kali membuat aktivitas sehari-hari menjadi kurang nyaman. Dengan Cable Organizer, kamu bisa menyimpan kabel dengan lebih rapi dan praktis. Hadir dengan berbagai pilihan motif dan warna menarik, produk ini juga dapat digunakan sebagai gantungan kunci yang lucu dan fungsional.
+          </p>
+        </div>
+      </div>
+
+      <!-- WHAT MAKES OUR PRODUCT SPECIAL? -->
+      <div class="py-24 border-b border-nord-border bg-[#EFEBE2]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 pb-6 border-b border-nord-border gap-4">
+            <div>
+              <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold">CRAFTSMANSHIP & UTILITY</span>
+              <h2 class="font-serif text-4xl sm:text-5xl font-normal text-nord-dark mt-1">What Makes Our Product Special?</h2>
+            </div>
+            <p class="text-xs text-nord-muted max-w-xs">Komposisi struktural dan keunggulan desain setiap unit Cable Organizer.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+            <div class="md:col-span-7 bg-nord-pure p-8 sm:p-12 border border-nord-border flex flex-col justify-between group hover:border-nord-dark transition-colors">
+              <div class="space-y-4">
+                <div class="flex justify-between items-center text-xs tracking-[0.2em] uppercase text-nord-muted border-b border-nord-border/60 pb-3">
+                  <span>[ SPECIAL POINT I ]</span>
+                  <span class="font-serif text-base text-nord-dark">Dual Purpose</span>
+                </div>
+                <h3 class="font-serif text-3xl sm:text-4xl font-normal text-nord-dark pt-2">Multifunctional Utility</h3>
+                <p class="text-xs sm:text-sm text-nord-muted leading-relaxed max-w-lg">
+                  Tidak hanya untuk merapikan gulungan kabel charger agar awet, tetapi dirancang presisi dengan loop pengait sehingga dapat digunakan sebagai gantungan kunci estetik atau pemanis tas ransel.
+                </p>
+              </div>
+              <div class="pt-8 flex items-center gap-6 text-[10px] tracking-[0.18em] uppercase text-stone-500 font-semibold border-t border-nord-border/60 mt-6">
+                <span>&bull; Pengikat Kabel</span>
+                <span>&bull; Gantungan Kunci Estetik</span>
+              </div>
+            </div>
+
+            <div class="md:col-span-5 bg-[#FAF8F5] p-8 sm:p-10 border border-nord-border flex flex-col justify-between group hover:border-nord-dark transition-colors">
+              <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs tracking-[0.2em] uppercase text-nord-muted border-b border-nord-border/60 pb-3">
+                  <span>[ POINT II ]</span>
+                  <span>Form Factor</span>
+                </div>
+                <h3 class="font-serif text-2xl sm:text-3xl font-normal text-nord-dark pt-2">Compact & Portable</h3>
+                <p class="text-xs text-nord-muted leading-relaxed">
+                  Berukuran praktis dan ergonomis. Masuk ke dalam saku celana, jaket, atau kompartemen tas terkecil tanpa memakan ruang.
+                </p>
+              </div>
+              <div class="pt-6 font-mono text-[10px] text-nord-muted">
+                DIMENSION // 13 x 5 CM
+              </div>
+            </div>
+
+            <div class="md:col-span-5 bg-[#FAF8F5] p-8 sm:p-10 border border-nord-border flex flex-col justify-between group hover:border-nord-dark transition-colors">
+              <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs tracking-[0.2em] uppercase text-nord-muted border-b border-nord-border/60 pb-3">
+                  <span>[ POINT III ]</span>
+                  <span>Aesthetics</span>
+                </div>
+                <h3 class="font-serif text-2xl sm:text-3xl font-normal text-nord-dark pt-2">Unique Design</h3>
+                <p class="text-xs text-nord-muted leading-relaxed">
+                  Tersedia dalam 8 pilihan motif polkadot retro dan garis pastel manis, dipercantik kancing snap kokoh anti-karat dengan warna kontras menarik.
+                </p>
+              </div>
+              <div class="pt-6 text-[10px] tracking-[0.18em] uppercase text-nord-muted font-medium">
+                8 CURATED TEXTILE PATTERNS
+              </div>
+            </div>
+
+            <div class="md:col-span-7 bg-nord-pure p-8 sm:p-12 border border-nord-border flex flex-col justify-between group hover:border-nord-dark transition-colors">
+              <div class="space-y-4">
+                <div class="flex justify-between items-center text-xs tracking-[0.2em] uppercase text-nord-muted border-b border-nord-border/60 pb-3">
+                  <span>[ SPECIAL POINT IV ]</span>
+                  <span class="font-serif text-base text-nord-dark">Conscious Material</span>
+                </div>
+                <h3 class="font-serif text-3xl sm:text-4xl font-normal text-nord-dark pt-2">Eco-Friendly Upcycled Cotton</h3>
+                <p class="text-xs sm:text-sm text-nord-muted leading-relaxed max-w-lg">
+                  Memanfaatkan sisa kain garmen katun murni menjadi produk bernilai guna tinggi, dipadukan lapisan busa pelindung empuk di bagian dalam untuk meredam benturan pada kabel charger.
+                </p>
+              </div>
+              <div class="pt-8 flex items-center gap-6 text-[10px] tracking-[0.18em] uppercase text-stone-500 font-semibold border-t border-nord-border/60 mt-6">
+                <span>&bull; Zero Waste Textile</span>
+                <span>&bull; Shock Absorb Foam</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- WHY CHOOSE US -->
+      <div class="py-24 border-b border-nord-border bg-nord-linen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div class="lg:col-span-6 space-y-6">
+            <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold">PROBLEM & RESOLUTION</span>
+            <h2 class="font-serif text-4xl sm:text-5xl font-normal text-nord-dark leading-tight">Why Choose Our Cable Organizer?</h2>
+            <div class="space-y-4 text-xs sm:text-sm text-nord-muted leading-relaxed font-normal">
+              <p>
+                Sering kesal karena kabel hilang, kusut, atau bahkan rusak akibat penyimpanan yang kurang rapi? Jangan sampai hal kecil seperti ini membuat aktivitasmu terganggu, apalagi sampai diomeli mama karena kabel dan barang-barangmu berantakan!
+              </p>
+              <p>
+                Cable Organizer hadir untuk membantu menjaga kabel tetap tersimpan dengan rapi, mudah ditemukan, dan lebih terorganisir. Selain itu, desainnya yang menarik juga membuat produk ini bisa digunakan sebagai gantungan kunci yang lucu dan multifungsi.
+              </p>
+              <p class="text-nord-dark font-medium">Praktis, menarik, dan terjangkau untuk kebutuhan sehari-hari!</p>
+            </div>
+            <button onclick="navigate('shop')" class="btn-nord mt-2">
+              Select Your Pattern &rarr;
+            </button>
+          </div>
+
+          <div class="lg:col-span-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="bg-nord-pure p-8 border border-nord-border space-y-3">
+                <span class="text-xs tracking-[0.2em] uppercase text-stone-400 block font-semibold">Standard Cable</span>
+                <h4 class="font-serif text-xl text-nord-dark">Tanpa Cable Organizer</h4>
+                <ul class="text-xs text-nord-muted space-y-2 pt-2 border-t border-nord-border">
+                  <li>— Kabel rawan terpelintir kusut</li>
+                  <li>— Tembaga charger mudah putus</li>
+                  <li>— Sering terselip di dasar tas</li>
+                </ul>
+              </div>
+
+              <div class="bg-nord-dark text-nord-linen p-8 border border-stone-800 space-y-3">
+                <span class="text-xs tracking-[0.2em] uppercase text-stone-400 block font-semibold">Refined Solution</span>
+                <h4 class="font-serif text-xl text-nord-linen">Cable Organizer</h4>
+                <ul class="text-xs text-stone-300 space-y-2 pt-2 border-t border-stone-700">
+                  <li>+ Gulungan rapi terlindung busa</li>
+                  <li>+ Kancing snap kokoh klik kuat</li>
+                  <li>+ Lonceng penanda posisi</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TESTIMONIALS -->
+      <div class="py-24 border-b border-nord-border bg-[#ECE8DF]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto mb-16 space-y-2">
+            <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold">PATRON EXPERIENCES</span>
+            <h2 class="font-serif text-4xl sm:text-5xl font-normal text-nord-dark">What People Say About Us</h2>
+            <p class="text-xs text-nord-muted">Pengalaman dan kepuasan pelanggan menjadi hal yang berarti bagi kami.</p>
+          </div>
+          <div id="homeTestimonialsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+      </div>
+
+      <!-- READY TO GET ORGANIZED -->
+      <div class="py-24 bg-nord-dark text-nord-linen text-center">
+        <div class="max-w-2xl mx-auto px-4 space-y-6">
+          <span class="text-[10px] tracking-[0.3em] uppercase text-stone-400 font-semibold block">BEGIN WITH REFINEMENT</span>
+          <h2 class="font-serif text-4xl sm:text-6xl font-normal tracking-tight text-nord-linen">Ready to Get Organized?</h2>
+          <p class="text-xs sm:text-sm text-stone-400 leading-relaxed font-normal">
+            Jangan biarkan kabel dan barang-barang kecilmu terus berantakan. Temukan motif favoritmu dan nikmati kemudahan dalam menjaga barang-barang tetap rapi!
+          </p>
+          <div class="pt-4">
+            <button onclick="navigate('shop')" class="bg-nord-linen text-nord-dark hover:bg-white text-[11px] font-semibold tracking-[0.2em] uppercase px-10 py-4 transition-colors">
+              Shop Now &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= PAGE 02: SHOP / COLLECTIONS ================= -->
+    <section id="page-shop" class="page-view hidden py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto space-y-3 mb-16">
+        <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">CURATED OBJECTS</span>
+        <h1 class="font-serif text-5xl sm:text-6xl font-normal tracking-tight text-nord-dark">Explore Our Collections</h1>
+        <p class="text-xs sm:text-sm text-nord-muted leading-relaxed font-normal">
+          Temukan Cable Organizer dengan motif dan warna yang sesuai dengan seleramu. Klik masing-masing motif untuk melihat preview gambar detail.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- PRODUCT 1: CABLE ORGANIZER ONLY -->
+        <div class="lg:col-span-7 nord-card p-8 sm:p-10 space-y-8">
+          <div class="flex flex-col sm:flex-row gap-8">
+            <div class="w-full sm:w-60 aspect-square bg-[#EAE6DD] border border-nord-border overflow-hidden relative flex-shrink-0">
+              <img 
+                id="shopOrganizerImg" 
+                src="poppie.jpg" 
+                onerror="this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80'" 
+                class="w-full h-full object-cover fade-swap" 
+                alt="Selected Motif Preview"
+              >
+              <span id="motifBadgeTag" class="absolute top-3 left-3 bg-nord-dark text-nord-linen text-[9px] tracking-[0.2em] font-semibold px-2.5 py-1 uppercase">
+                Poppie
+              </span>
+            </div>
+            
+            <div class="space-y-3 flex-1">
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted font-semibold block">PRIMARY OBJECT</span>
+              <h2 class="font-serif text-3xl font-normal text-nord-dark">Cable Organizer Only</h2>
+              <p class="text-xs text-nord-muted leading-relaxed font-normal">
+                Pouch pengikat kabel buatan tangan berbahan katun upcycled bermutu tinggi, busa pelindung empuk, dan kancing snap kokoh anti-karat.
+              </p>
+              <div class="pt-2 flex items-baseline gap-3">
+                <span id="priceDisplayOrganizer" class="font-serif text-3xl font-normal text-nord-dark">Rp9.000</span>
+                <span id="originalPriceStrike" class="hidden text-xs line-through text-stone-400 font-normal">Rp15.000</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8 Motif Selector -->
+          <div class="border-t border-nord-border pt-6 space-y-4">
+            <div class="flex justify-between items-center text-xs font-semibold tracking-wider uppercase">
+              <span>Select Pattern:</span>
+              <span id="selectedMotifLabel" class="text-nord-dark font-serif text-base font-normal tracking-normal">Poppie</span>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="motifSelectorGrid"></div>
+
+            <p id="selectedMotifDesc" class="text-xs text-nord-muted italic p-3 bg-nord-linen border border-nord-border">
+              Dasar putih bersih polkadot hitam dengan kancing pastel pink.
+            </p>
+          </div>
+
+          <!-- ADD-ON KEYCHAIN CHECKBOX -->
+          <div class="border border-nord-dark bg-nord-linen p-5 space-y-2">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" id="addonKeychainCheckbox" onchange="toggleKeychainAddon()" class="mt-1 w-4 h-4 rounded-none border-nord-dark text-nord-dark focus:ring-0">
+              <div class="text-xs">
+                <div class="font-semibold text-nord-dark tracking-wider uppercase flex items-center gap-2">
+                  <span>Tambah Add-on Bell Keychain</span>
+                  <span class="bg-nord-dark text-nord-linen text-[9px] px-2 py-0.5 tracking-widest font-normal">SAVE RP3.000</span>
+                </div>
+                <p class="text-nord-muted text-[11px] mt-1">
+                  Lengkapi dengan gantungan pita mutiara & lonceng perak gemerincing manis.
+                </p>
+                <div class="mt-2 text-xs flex items-center gap-2">
+                  <span class="text-nord-muted">Harga Spesial Bundle:</span>
+                  <span class="line-through text-stone-400">Rp15.000</span>
+                  <span class="font-serif text-base font-semibold text-nord-dark">Rp12.000 Saja</span>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <button onclick="addOrganizerToCart()" class="btn-nord w-full py-4 text-xs tracking-[0.2em]">
+            <span id="btnOrganizerText">Add to Bag — Rp9.000</span>
+          </button>
+        </div>
+
+        <!-- PRODUCT 2: RIBBON & BELL KEYCHAIN ONLY -->
+        <div class="lg:col-span-5 nord-card p-8 sm:p-10 space-y-8">
+          <div class="aspect-square bg-[#EAE6DD] border border-nord-border overflow-hidden relative">
+            <img src="gancc.jpg" onerror="this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover" alt="Ribbon & Bell Keychain">
+            <span class="absolute top-3 left-3 bg-nord-dark text-nord-linen text-[9px] tracking-[0.2em] font-semibold px-2.5 py-1 uppercase">
+              Accessory
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">STANDALONE KEYCHAIN</span>
+            <h2 class="font-serif text-3xl font-normal text-nord-dark">Ribbon & Bell Keychain</h2>
+            <p class="text-xs text-nord-muted leading-relaxed font-normal">
+              Hiasan gantungan kunci ekstra manis terdiri dari charm pita mutiara putih, lonceng gemerincing perak nyaring, dan rantai biji lada kokoh anti-macet.
+            </p>
+            <div class="pt-2 flex items-baseline gap-2">
+              <span class="font-serif text-3xl font-normal text-nord-dark">Rp5.000</span>
+              <span class="text-xs line-through text-stone-400 font-normal">Rp7.000</span>
+            </div>
+          </div>
+
+          <ul class="text-xs text-nord-muted space-y-2 border-t border-nord-border pt-4">
+            <li>— 1x Gantungan Pita Mutiara Putih</li>
+            <li>— 1x Lonceng Perak Gemerincing Nyaring</li>
+            <li>— Rantai biji lada kokoh anti-lepas</li>
+          </ul>
+
+          <button onclick="addKeychainToCart()" class="btn-nord w-full py-4 text-xs tracking-[0.2em]">
+            Add Keychain to Bag — Rp5.000
+          </button>
+        </div>
+
+      </div>
+
+      <div class="mt-20 py-16 px-6 bg-nord-pure border border-nord-border text-center space-y-3">
+        <h2 class="font-serif text-3xl font-normal text-nord-dark">Find Your Favorite One!</h2>
+        <p class="text-xs sm:text-sm text-nord-muted max-w-xl mx-auto leading-relaxed font-normal">
+          Masih bingung menentukan pilihan? Jelajahi seluruh koleksi kami dan pilih motif yang paling sesuai dengan gaya dan kebutuhanmu.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ================= PAGE 03: SHOPPING CART ================= -->
+    <section id="page-cart" class="page-view hidden py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto space-y-3 mb-16">
+        <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">CHECKOUT READY</span>
+        <h1 class="font-serif text-5xl font-normal tracking-tight text-nord-dark">Your Shopping Cart</h1>
+        <p class="text-xs text-nord-muted">
+          Sedikit lagi produk favoritmu menjadi milikmu! Periksa kembali pilihan produk sebelum melanjutkan ke proses pemesanan.
+        </p>
+      </div>
+
+      <div id="cartEmptyState" class="hidden text-center py-20 bg-nord-pure border border-nord-border space-y-4">
+        <span class="text-2xl text-stone-400 font-serif">Empty Bag</span>
+        <h3 class="font-serif text-2xl font-normal text-nord-dark">Keranjang Belanjamu Masih Kosong</h3>
+        <p class="text-xs text-nord-muted">Yuk, pilih Cable Organizer favoritmu di halaman Shop!</p>
+        <button onclick="navigate('shop')" class="btn-nord mt-2">
+          Explore Collections &rarr;
+        </button>
+      </div>
+
+      <div id="cartContentWrapper" class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div class="lg:col-span-7 space-y-4" id="cartItemsList"></div>
+
+        <div class="lg:col-span-5 nord-card p-8 space-y-6">
+          <h3 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark pb-3 border-b border-nord-border">
+            Order Summary
+          </h3>
+          <div class="space-y-3 text-xs">
+            <div class="flex justify-between text-nord-muted">
+              <span>Subtotal Produk</span>
+              <span id="cartSubtotalText" class="font-medium text-nord-dark">Rp0</span>
+            </div>
+            <div class="pt-4 border-t border-nord-border flex justify-between items-baseline">
+              <span class="text-xs font-semibold tracking-[0.15em] uppercase text-nord-dark">Total Tagihan</span>
+              <span id="cartGrandTotalText" class="font-serif text-2xl font-normal text-nord-dark">Rp0</span>
+            </div>
+          </div>
+          <button onclick="navigate('checkout')" class="btn-nord w-full py-4 text-xs tracking-[0.2em]">
+            Proceed to Checkout &rarr;
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= PAGE 04: CHECKOUT ================= -->
+    <section id="page-checkout" class="page-view hidden py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto space-y-3 mb-16">
+        <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">STEP 2 OF 2</span>
+        <h1 class="font-serif text-5xl font-normal tracking-tight text-nord-dark">Complete Your Order</h1>
+        <p class="text-xs text-nord-muted">
+          Lengkapi data pemesanan di bawah ini untuk menyelesaikan pesananmu secara langsung.
+        </p>
+      </div>
+
+      <form id="checkoutForm" onsubmit="handlePlaceOrder(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div class="lg:col-span-7 space-y-8">
+          
+          <div class="nord-card p-8 space-y-5">
+            <h3 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark pb-3 border-b border-nord-border">
+              Customer Information & Delivery Location
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Full Name *</label>
+                <input type="text" id="c_name" required placeholder="Nama Lengkapmu" class="w-full bg-nord-linen border border-nord-border px-3.5 py-2.5 text-xs focus:outline-none focus:border-nord-dark">
+              </div>
+              <div>
+                <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">WhatsApp Number *</label>
+                <input type="tel" id="c_wa" required placeholder="08123456789" class="w-full bg-nord-linen border border-nord-border px-3.5 py-2.5 text-xs focus:outline-none focus:border-nord-dark">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Email Address (Optional)</label>
+                <input type="email" id="c_email" placeholder="email@contoh.com" class="w-full bg-nord-linen border border-nord-border px-3.5 py-2.5 text-xs focus:outline-none focus:border-nord-dark">
+              </div>
+              <div class="sm:col-span-2 space-y-2">
+                <label class="block text-nord-muted uppercase tracking-wider text-[10px]">
+                  Full Address / Titik Penyerahan *
+                </label>
+                <textarea id="c_address" rows="3" required placeholder="Alamat rumah/kost atau info janji temu di area kampus PNJ (Gedung, Kantin, Perpustakaan)..." class="w-full bg-nord-linen border border-nord-border px-3.5 py-2.5 text-xs focus:outline-none focus:border-nord-dark"></textarea>
+                
+                <div class="p-3.5 bg-nord-linen border border-nord-border space-y-1.5 text-xs">
+                  <div class="flex items-center gap-2 text-nord-dark font-medium">
+                    <span class="text-stone-800 font-bold">✓</span>
+                    <span>Free ongkir untuk area sekitar Politeknik Negeri Jakarta (PNJ).</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 leading-relaxed">
+                    * Harga belum termasuk ongkos kirim untuk kawasan di luar PNJ (biaya ekspedisi akan dikonfirmasi admin via WhatsApp).
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nord-card p-8 space-y-4">
+            <h3 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark pb-3 border-b border-nord-border">
+              Payment Method
+            </h3>
+            <div class="space-y-3 text-xs">
+              <label class="flex items-center justify-between p-4 border border-nord-dark bg-nord-linen cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="payMethod" value="QRIS" checked>
+                  <span class="font-medium text-nord-dark">QRIS (Scan All Bank / BCA / GoPay / ShopeePay)</span>
+                </div>
+                <span class="text-[10px] tracking-widest uppercase font-semibold text-stone-500">Instant</span>
+              </label>
+
+              <label class="flex items-center justify-between p-4 border border-nord-border hover:border-nord-dark cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="payMethod" value="E-Wallet">
+                  <span class="font-medium text-nord-dark">E-Wallet Direct (GoPay / ShopeePay / DANA)</span>
+                </div>
+                <span class="text-[10px] tracking-widest uppercase font-semibold text-stone-500">Transfer</span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="lg:col-span-5 nord-card p-8 space-y-6 sticky top-28">
+          <h3 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark pb-3 border-b border-nord-border">
+            Order Review
+          </h3>
+          <div id="checkoutItemsList" class="space-y-3 max-h-48 overflow-y-auto text-xs pr-1"></div>
+          
+          <div class="pt-3 border-t border-nord-border space-y-2 text-xs">
+            <div class="flex justify-between text-nord-muted">
+              <span>Subtotal Produk</span>
+              <span id="chkSubtotal" class="font-medium text-nord-dark">Rp0</span>
+            </div>
+            <div class="pt-4 border-t border-nord-border flex justify-between items-baseline">
+              <span class="text-xs font-semibold tracking-[0.15em] uppercase text-nord-dark">Total Tagihan</span>
+              <span id="chkGrandTotal" class="font-serif text-3xl font-normal text-nord-dark">Rp0</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-nord w-full py-4 text-xs tracking-[0.2em]">
+            Place Your Order &rarr;
+          </button>
+          
+          <p class="text-[10px] text-center text-nord-muted tracking-wide">
+            🔒 Konfirmasi pembayaran & jadwal pengiriman akan diarahkan ke WhatsApp Admin.
+          </p>
+        </div>
+      </form>
+
+    </section>
+
+    <!-- ================= PAGE 05: CONFIRMATION ================= -->
+    <section id="page-confirmation" class="page-view hidden py-16 sm:py-24 max-w-3xl mx-auto px-4 sm:px-6">
+      <div class="nord-card p-8 sm:p-12 space-y-8">
+        <div class="text-center space-y-2">
+          <span class="text-xs font-serif text-stone-400">Order Completed</span>
+          <h1 class="font-serif text-4xl sm:text-5xl font-normal text-nord-dark">Terima Kasih Atas Pesananmu</h1>
+          <p class="text-xs text-nord-muted">Nomor pesanan unik kamu:</p>
+          <div id="confOrderId" class="inline-block px-4 py-1.5 bg-nord-linen border border-nord-border font-mono text-xs font-bold text-nord-dark tracking-wider">ORD-0000</div>
+        </div>
+
+        <div class="p-6 bg-nord-linen border border-nord-border space-y-4">
+          <h3 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark">Petunjuk Pembayaran</h3>
+          <div id="confPaymentInstructions" class="text-xs text-nord-muted space-y-1"></div>
+          
+          <div class="flex items-center gap-6 bg-nord-pure p-4 border border-nord-border mt-4">
+            <img src="qrcodewa.png" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CABLE-ORGANIZER-PAY'" class="w-24 h-24 object-contain border border-nord-border" alt="QRIS Code">
+            <div class="text-xs space-y-1">
+              <div class="font-serif text-lg text-nord-dark">Ray's Project / Cable Organizer</div>
+              <div class="text-stone-400 text-[11px]">Scan QRIS via BCA, GoPay, ShopeePay, Mandiri</div>
+              <div id="confTotalPay" class="font-serif text-2xl text-nord-dark pt-1 font-semibold">Rp0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 pt-2">
+          <a id="confWaBtn" href="#" target="_blank" class="btn-nord flex-1 py-4 text-center justify-center">
+            Konfirmasi Bukti Bayar via WhatsApp &rarr;
+          </a>
+          <button onclick="navigate('shop')" class="btn-nord-outline px-8 py-4">
+            Kembali ke Toko
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 06: ABOUT US ================= -->
+    <section id="page-about" class="page-view hidden py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+      
+      <div class="text-center max-w-3xl mx-auto space-y-4">
+        <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">THE PHILOSOPHY</span>
+        <h1 class="font-serif text-5xl sm:text-6xl font-normal tracking-tight text-nord-dark">A Little Story Behind Our Product</h1>
+        <p class="text-xs sm:text-sm text-nord-muted leading-relaxed font-normal">
+          Setiap produk memiliki cerita, begitu pula dengan produk kami. Semuanya berawal dari sebuah ide sederhana untuk mengubah limbah tekstil menjadi sesuatu yang lebih bermanfaat.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-10 items-center bg-nord-pure p-8 sm:p-12 border border-nord-border">
+        <div class="md:col-span-7 space-y-4">
+          <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold">SUSTAINABLE UPCYCLING</span>
+          <h2 class="font-serif text-3xl sm:text-4xl font-normal text-nord-dark">From Textile Waste to Everyday Essentials</h2>
+          <div class="space-y-3 text-xs sm:text-sm text-nord-muted leading-relaxed font-normal">
+            <p>Cable Organizer dibuat dengan gagasan untuk memberikan nilai guna baru pada limbah tekstil. Daripada membiarkan material tekstil yang tidak terpakai menjadi sia-sia, kami mengolahnya menjadi aksesori praktis yang dapat membantu masyarakat dalam mengorganisir barang-barang sehari-hari.</p>
+            <p>Melalui produk ini, kami ingin menggabungkan fungsi, kreativitas, dan kepedulian terhadap lingkungan dalam sebuah produk sederhana.</p>
+          </div>
+        </div>
+        <div class="md:col-span-5 flex justify-center">
+          <div class="aspect-square w-64 bg-[#EAE6DD] border border-nord-border overflow-hidden">
+            <img src="produk.jpeg" onerror="this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80'" class="w-full h-full object-cover" alt="Cable Organizer Story">
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-12">
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">OUR CREED & PILLARS</span>
+          <h2 class="font-serif text-4xl sm:text-5xl font-normal text-nord-dark">What We Believe In</h2>
+          <p class="text-xs sm:text-sm text-nord-muted leading-relaxed font-normal">
+            Kami percaya bahwa produk yang bermanfaat tidak harus selalu dibuat dengan cara yang menghasilkan banyak limbah.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <div class="bg-nord-pure p-10 border border-nord-border relative space-y-4 group hover:border-nord-dark transition-colors">
+            <div class="flex justify-between items-baseline border-b border-nord-border/60 pb-4">
+              <span class="font-serif text-2xl text-nord-dark font-normal">I / CREATIVITY</span>
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted">PILLAR NO. 1</span>
+            </div>
+            <p class="text-xs sm:text-sm text-nord-muted leading-relaxed pt-2">
+              Menghidupkan kembali potongan kain menjadi corak retro polkadot dan garis ceria yang memikat, mengubah material terbuang menjadi identitas visual unik.
+            </p>
+          </div>
+
+          <div class="bg-nord-pure p-10 border border-nord-border relative space-y-4 group hover:border-nord-dark transition-colors">
+            <div class="flex justify-between items-baseline border-b border-nord-border/60 pb-4">
+              <span class="font-serif text-2xl text-nord-dark font-normal">II / FUNCTIONALITY</span>
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted">PILLAR NO. 2</span>
+            </div>
+            <p class="text-xs sm:text-sm text-nord-muted leading-relaxed pt-2">
+              Desain yang menuntaskan masalah nyata: melindungi kabel dari kusut, menahan hentakan dengan busa lembut, dan mudah dicari berkat lonceng gemerincing.
+            </p>
+          </div>
+
+          <div class="bg-nord-pure p-10 border border-nord-border relative space-y-4 group hover:border-nord-dark transition-colors">
+            <div class="flex justify-between items-baseline border-b border-nord-border/60 pb-4">
+              <span class="font-serif text-2xl text-nord-dark font-normal">III / AFFORDABILITY</span>
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted">PILLAR NO. 3</span>
+            </div>
+            <p class="text-xs sm:text-sm text-nord-muted leading-relaxed pt-2">
+              Aksesori berkualitas tidak harus mahal. Kami menjaga harga tetap bersahabat agar dapat dinikmati pelajar, mahasiswa, dan masyarakat luas.
+            </p>
+          </div>
+
+          <div class="bg-nord-pure p-10 border border-nord-border relative space-y-4 group hover:border-nord-dark transition-colors">
+            <div class="flex justify-between items-baseline border-b border-nord-border/60 pb-4">
+              <span class="font-serif text-2xl text-nord-dark font-normal">IV / SUSTAINABILITY</span>
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted">PILLAR NO. 4</span>
+            </div>
+            <p class="text-xs sm:text-sm text-nord-muted leading-relaxed pt-2">
+              Komitmen nyata untuk mengurangi timbunan limbah industri garmen. Setiap pcs Cable Organizer adalah langkah kecil penyelamatan lingkungan hidup.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= PAGE 07: CONTACT & FAQ ================= -->
+    <section id="page-contact" class="page-view hidden py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
+      
+      <div class="text-center max-w-2xl mx-auto space-y-3">
+        <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold block">CLIENT SERVICE</span>
+        <h1 class="font-serif text-5xl font-normal tracking-tight text-nord-dark">We'd Love to Hear From You!</h1>
+        <p class="text-xs sm:text-sm text-nord-muted font-normal">
+          Punya pertanyaan seputar produk, pilihan motif, atau pesananmu? Jangan ragu untuk menghubungi kami. Kami siap membantu dan memberikan informasi yang kamu butuhkan!
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="nord-card p-8 space-y-2 text-center">
+          <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">CATALOGUE UPDATES</span>
+          <h3 class="font-serif text-2xl font-normal text-nord-dark">Instagram</h3>
+          <a id="contactIgLink" href="https://instagram.com/cableorganizer_" target="_blank" class="text-xs font-medium text-nord-dark hover:underline block pt-2">@cableorganizer_</a>
+        </div>
+
+        <div class="nord-card p-8 space-y-2 text-center">
+          <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">DIRECT ASSISTANCE</span>
+          <h3 class="font-serif text-2xl font-normal text-nord-dark">WhatsApp</h3>
+          <a id="contactWaLink" href="https://wa.me/62895704261013" target="_blank" class="text-xs font-medium text-nord-dark hover:underline block pt-2">+62 895-7042-61013</a>
+        </div>
+
+        <div class="nord-card p-8 space-y-2 text-center">
+          <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">INQUIRIES</span>
+          <h3 class="font-serif text-2xl font-normal text-nord-dark">Email</h3>
+          <a id="contactEmailLink" href="mailto:rayscableorganizer@gmail.com" class="text-xs font-medium text-nord-dark hover:underline block pt-2">rayscableorganizer@gmail.com</a>
+        </div>
+      </div>
+
+      <!-- FAQ Section -->
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="text-center">
+          <h2 class="font-serif text-4xl font-normal text-nord-dark">Frequently Asked Questions</h2>
+        </div>
+        <div class="space-y-3">
+          <div class="nord-card overflow-hidden">
+            <button onclick="toggleFaq(1)" class="w-full text-left p-5 text-xs sm:text-sm font-semibold tracking-wide uppercase flex justify-between items-center text-nord-dark hover:bg-nord-linen transition-colors">
+              <span>What is a Cable Organizer?</span>
+              <span id="faq-icon-1" class="font-serif text-base">+</span>
+            </button>
+            <div id="faq-body-1" class="hidden px-5 pb-5 text-xs text-nord-muted border-t border-nord-border pt-3 font-normal leading-relaxed">
+              Cable Organizer merupakan aksesori praktis yang dirancang untuk membantu menyimpan kabel agar lebih rapi, terorganisir, dan mudah dibawa.
+            </div>
+          </div>
+
+          <div class="nord-card overflow-hidden">
+            <button onclick="toggleFaq(2)" class="w-full text-left p-5 text-xs sm:text-sm font-semibold tracking-wide uppercase flex justify-between items-center text-nord-dark hover:bg-nord-linen transition-colors">
+              <span>Can it be used for something other than cables?</span>
+              <span id="faq-icon-2" class="font-serif text-base">+</span>
+            </button>
+            <div id="faq-body-2" class="hidden px-5 pb-5 text-xs text-nord-muted border-t border-nord-border pt-3 font-normal leading-relaxed">
+              Tentu! Selain untuk merapikan kabel, produk kami juga dapat digunakan sebagai gantungan kunci yang praktis dan estetik.
+            </div>
+          </div>
+
+          <div class="nord-card overflow-hidden">
+            <button onclick="toggleFaq(3)" class="w-full text-left p-5 text-xs sm:text-sm font-semibold tracking-wide uppercase flex justify-between items-center text-nord-dark hover:bg-nord-linen transition-colors">
+              <span>What materials are used?</span>
+              <span id="faq-icon-3" class="font-serif text-base">+</span>
+            </button>
+            <div id="faq-body-3" class="hidden px-5 pb-5 text-xs text-nord-muted border-t border-nord-border pt-3 font-normal leading-relaxed">
+              Produk kami memanfaatkan material tekstil, termasuk limbah tekstil katun yang diolah kembali menjadi aksesori fungsional dengan busa pelindung empuk di dalamnya.
+            </div>
+          </div>
+
+          <div class="nord-card overflow-hidden">
+            <button onclick="toggleFaq(4)" class="w-full text-left p-5 text-xs sm:text-sm font-semibold tracking-wide uppercase flex justify-between items-center text-nord-dark hover:bg-nord-linen transition-colors">
+              <span>How can I place an order?</span>
+              <span id="faq-icon-4" class="font-serif text-base">+</span>
+            </button>
+            <div id="faq-body-4" class="hidden px-5 pb-5 text-xs text-nord-muted border-t border-nord-border pt-3 font-normal leading-relaxed">
+              Kamu cukup mengunjungi halaman Shop, memilih motif favorit, menambahkannya ke keranjang, lalu melanjutkan ke proses checkout.
+            </div>
+          </div>
+
+          <div class="nord-card overflow-hidden">
+            <button onclick="toggleFaq(5)" class="w-full text-left p-5 text-xs sm:text-sm font-semibold tracking-wide uppercase flex justify-between items-center text-nord-dark hover:bg-nord-linen transition-colors">
+              <span>How can I contact the seller?</span>
+              <span id="faq-icon-5" class="font-serif text-base">+</span>
+            </button>
+            <div id="faq-body-5" class="hidden px-5 pb-5 text-xs text-nord-muted border-t border-nord-border pt-3 font-normal leading-relaxed">
+              Kamu dapat menghubungi kami melalui Instagram @cableorganizer_ atau WhatsApp yang tersedia di halaman Contact ini.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-12 bg-nord-pure border border-nord-border text-center space-y-4">
+        <h3 class="font-serif text-3xl font-normal text-nord-dark">Still Have Questions?</h3>
+        <p class="text-xs text-nord-muted max-w-md mx-auto leading-relaxed">
+          Jangan ragu untuk menghubungi kami apabila masih ada hal yang ingin ditanyakan. Kami senang bisa membantu membuat pengalaman berbelanjamu menjadi lebih mudah dan menyenangkan!
+        </p>
+        <div class="pt-2">
+          <a id="btnChatWa" href="https://wa.me/62895704261013" target="_blank" class="btn-nord">
+            Chat With Us &rarr;
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= PAGE 08: PRIVATE ADMIN DASHBOARD ================= -->
+    <section id="page-admin" class="page-view hidden py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Login Box -->
+      <div id="adminLoginBox" class="max-w-md mx-auto nord-card p-10 space-y-6">
+        <div class="text-center space-y-1">
+          <span class="text-xs tracking-[0.2em] uppercase text-nord-muted">RESTRICTED AREA</span>
+          <h2 class="font-serif text-3xl font-normal text-nord-dark">Admin Access</h2>
+        </div>
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Username / Email</label>
+            <input type="text" id="adminUser" required value="admin@cableorganizer.id" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+          </div>
+          <div>
+            <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Password</label>
+            <input type="password" id="adminPass" required value="admin12345" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+          </div>
+          <button type="submit" class="btn-nord w-full py-3.5 mt-2">
+            Authenticate &rarr;
+          </button>
+        </form>
+      </div>
+
+      <!-- Logged-in Portal -->
+      <div id="adminPanelBox" class="hidden space-y-8">
+        <div class="flex justify-between items-center pb-6 border-b border-nord-border">
+          <div>
+            <span class="text-[10px] tracking-[0.25em] uppercase text-nord-muted font-semibold">STUDIO KONTROL</span>
+            <h1 class="font-serif text-4xl font-normal text-nord-dark">Operations Management</h1>
+          </div>
+          <button onclick="handleAdminLogout()" class="btn-nord-outline py-2 px-5 text-[10px]">
+            Sign Out
+          </button>
+        </div>
+
+        <!-- Admin Subtabs -->
+        <div class="flex flex-wrap gap-2 text-xs font-semibold tracking-wider uppercase pb-2 border-b border-nord-border">
+          <button onclick="switchAdminTab('dash')" id="atab-dash" class="px-4 py-2 border border-nord-dark bg-nord-dark text-nord-linen">Stats & Grafik</button>
+          <button onclick="switchAdminTab('motifs')" id="atab-motifs" class="px-4 py-2 border border-nord-border bg-nord-pure text-nord-dark hover:border-nord-dark">Stok Motif</button>
+          <button onclick="switchAdminTab('orders')" id="atab-orders" class="px-4 py-2 border border-nord-border bg-nord-pure text-nord-dark hover:border-nord-dark">Pesanan</button>
+          <button onclick="switchAdminTab('settings')" id="atab-settings" class="px-4 py-2 border border-nord-border bg-nord-pure text-nord-dark hover:border-nord-dark">Pengaturan Toko</button>
+        </div>
+
+        <!-- 1. Metric Stats & 2 GRAFIK (OMZET & MOTIF) -->
+        <div id="adm-view-dash" class="space-y-8">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div class="nord-card p-6">
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">TOTAL REVENUE</span>
+              <div id="statRevenue" class="font-serif text-3xl text-nord-dark mt-2 font-normal">Rp0</div>
+            </div>
+            <div class="nord-card p-6">
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">TOTAL ORDERS</span>
+              <div id="statOrders" class="font-serif text-3xl text-nord-dark mt-2 font-normal">0</div>
+            </div>
+            <div class="nord-card p-6">
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">MOTIF STOCK</span>
+              <div id="statStock" class="font-serif text-3xl text-nord-dark mt-2 font-normal">0 pcs</div>
+            </div>
+            <div class="nord-card p-6">
+              <span class="text-[10px] tracking-[0.2em] uppercase text-nord-muted block">ACTIVE PRODUCTS</span>
+              <div class="font-serif text-3xl text-nord-dark mt-2 font-normal">2 Catalog</div>
+            </div>
+          </div>
+
+          <!-- KEDUA GRAFIK ELEGAN (LINE CHART OMZET & BAR CHART MOTIF) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            
+            <!-- Grafik 1: Tren Omzet Penjualan (7 Kolom) -->
+            <div class="lg:col-span-7 nord-card p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-baseline border-b border-nord-border pb-4 mb-4">
+                  <div>
+                    <span class="text-[9px] tracking-[0.2em] uppercase text-nord-muted block font-semibold">FINANCIAL PERFORMANCE</span>
+                    <h3 class="font-serif text-2xl font-normal text-nord-dark">Tren Omzet Penjualan</h3>
+                  </div>
+                  <span id="chartRevenueTotalBadge" class="text-xs font-mono font-medium text-nord-dark bg-nord-linen px-2.5 py-1 border border-nord-border">
+                    Total: Rp0
+                  </span>
+                </div>
+                <p class="text-[11px] text-nord-muted mb-4">Grafik pergerakan nominal pemasukan (Rupiah) berdasarkan tanggal transaksi pesanan.</p>
+              </div>
+
+              <div class="relative w-full h-64 sm:h-72">
+                <canvas id="revenueChartCanvas"></canvas>
+              </div>
+
+              <div class="pt-4 mt-4 border-t border-nord-border/60 flex justify-between items-center text-[10px] text-stone-400 uppercase tracking-wider">
+                <span>Kurva Penjualan Harian</span>
+                <span>Diperbarui Otomatis</span>
+              </div>
+            </div>
+
+            <!-- Grafik 2: Performa Penjualan 8 Motif (5 Kolom) -->
+            <div class="lg:col-span-5 nord-card p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-baseline border-b border-nord-border pb-4 mb-4">
+                  <div>
+                    <span class="text-[9px] tracking-[0.2em] uppercase text-nord-muted block font-semibold">INVENTORY DEMAND</span>
+                    <h3 class="font-serif text-2xl font-normal text-nord-dark">Performa 8 Motif</h3>
+                  </div>
+                  <span class="text-[10px] font-mono tracking-wider uppercase text-nord-muted">Unit Terjual</span>
+                </div>
+                <p class="text-[11px] text-nord-muted mb-4">Kuantitas produk yang telah diadopsi per masing-masing corak kain.</p>
+              </div>
+
+              <div class="relative w-full h-64 sm:h-72">
+                <canvas id="motifChartCanvas"></canvas>
+              </div>
+
+              <div class="pt-4 mt-4 border-t border-nord-border/60 flex justify-between items-center text-[10px] text-stone-400 uppercase tracking-wider">
+                <span>Distribusi Corak Kain</span>
+                <span>Top Demanded Patterns</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. Motifs Management -->
+        <div id="adm-view-motifs" class="hidden nord-card p-8 space-y-4">
+          <h3 class="font-serif text-2xl font-normal text-nord-dark">Kelola Stok 8 Motif Cable Organizer</h3>
+          <div class="overflow-x-auto text-xs">
+            <table class="w-full text-left" id="adminMotifsTable"></table>
+          </div>
+        </div>
+
+        <!-- 3. Orders Table -->
+        <div id="adm-view-orders" class="hidden nord-card p-8 space-y-4">
+          <h3 class="font-serif text-2xl font-normal text-nord-dark">Daftar Pesanan Pelanggan</h3>
+          <div class="overflow-x-auto text-xs">
+            <table class="w-full text-left" id="adminOrdersTable"></table>
+          </div>
+        </div>
+
+        <!-- 4. PENGATURAN TOKO & KUSTOMISASI AKUN ADMIN -->
+        <div id="adm-view-settings" class="hidden nord-card p-8 space-y-8">
+          <div class="border-b border-nord-border pb-4">
+            <h3 class="font-serif text-2xl font-normal text-nord-dark">Pengaturan Toko & Identitas Brand</h3>
+            <p class="text-xs text-nord-muted mt-1">Ubah nama brand, nomor kontak WhatsApp, logo, dan kredensial akun login admin Anda.</p>
+          </div>
+
+          <form onsubmit="handleSaveSettings(event)" class="space-y-8 text-xs">
+            <div class="space-y-4">
+              <h4 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark border-b border-nord-border/50 pb-2">Informasi Publik</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Nama Brand / Toko</label>
+                  <input type="text" id="set_brand" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Tagline Brand</label>
+                  <input type="text" id="set_tagline" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">WhatsApp Admin (Contoh: 62895704261013)</label>
+                  <input type="text" id="set_wa" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Instagram Akun (@username)</label>
+                  <input type="text" id="set_ig" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Path / Nama File Logo (Contoh: logo.png)</label>
+                  <input type="text" id="set_logo" placeholder="logo.png" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Teks Tahun / EST Top Bar</label>
+                  <input type="text" id="set_est" placeholder="HANDMADE // 2026" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Teks Banner Berjalan Atas</label>
+                  <input type="text" id="set_banner" class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4 pt-4 border-t border-nord-border">
+              <h4 class="text-xs font-semibold tracking-[0.2em] uppercase text-nord-dark border-b border-nord-border/50 pb-2">Kredensial Login Admin (Ganti Email & Password)</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Email / Username Admin Baru</label>
+                  <input type="text" id="set_admin_user" required class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+                <div>
+                  <label class="block text-nord-muted mb-1 uppercase tracking-wider text-[10px]">Password Admin Baru</label>
+                  <input type="text" id="set_admin_pass" required class="w-full bg-nord-linen border border-nord-border p-3 focus:outline-none focus:border-nord-dark">
+                </div>
+              </div>
+              <p class="text-[11px] text-stone-500">* Setelah Anda menekan tombol simpan, gunakan kombinasi email dan password baru ini saat masuk ke portal admin.</p>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="btn-nord">
+                Simpan Seluruh Pengaturan Toko &rarr;
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 4. EDITORIAL MINIMAL FOOTER WITH INQUIRIES LOCATION -->
+  <footer class="bg-nord-dark text-nord-linen pt-20 pb-12 border-t border-stone-800 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 pb-16 border-b border-stone-800">
+      
+      <div class="space-y-4 md:col-span-2">
+        <div class="h-10 flex items-center">
+          <img 
+            id="footerBrandLogo" 
+            src="logo.png" 
+            alt="Brand Logo" 
+            class="max-h-10 w-auto object-contain brightness-0 invert"
+            onerror="this.style.display='none'; document.getElementById('footerLogoFallback').style.display='block';"
+          />
+          <h2 id="footerLogoFallback" style="display:none;" class="font-serif text-3xl text-nord-linen tracking-wide uppercase">Ray's Project</h2>
+        </div>
+        <p class="text-stone-400 max-w-sm leading-relaxed text-xs">
+          Aksesori multifungsi katun daur ulang dengan sentuhan kriya tangan modern. Menjaga kerapian barang-barang kecil agar tahan lama dan estetik.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <h4 class="text-[11px] font-semibold tracking-[0.2em] uppercase text-nord-linen">Navigation</h4>
+        <ul class="space-y-2 text-stone-400 text-xs">
+          <li><a href="javascript:void(0)" onclick="navigate('home')" class="hover:text-white transition-colors">Overview</a></li>
+          <li><a href="javascript:void(0)" onclick="navigate('shop')" class="hover:text-white transition-colors">Collection (2 Items)</a></li>
+          <li><a href="javascript:void(0)" onclick="navigate('about')" class="hover:text-white transition-colors">Philosophy</a></li>
+          <li><a href="javascript:void(0)" onclick="navigate('contact')" class="hover:text-white transition-colors">Client Service</a></li>
+        </ul>
+      </div>
+
+      <div class="space-y-3">
+        <h4 class="text-[11px] font-semibold tracking-[0.2em] uppercase text-nord-linen">Inquiries</h4>
+        <ul class="space-y-2 text-stone-400 text-xs">
+          <li>Instagram: <a id="footerIg" href="https://instagram.com/cableorganizer_" target="_blank" class="hover:text-white">@cableorganizer_</a></li>
+          <li>WhatsApp: <a id="footerWa" href="https://wa.me/62895704261013" target="_blank" class="hover:text-white">+62 895-7042-61013</a></li>
+          <li>Location: <span class="text-nord-linen font-medium">Politeknik Negeri Jakarta</span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex flex-col sm:flex-row justify-between text-[11px] text-stone-500 tracking-wider gap-2">
+      <p>&copy; 2026 <span id="footerCopyBrand">RAY'S PROJECT</span>. ALL RIGHTS RESERVED.</p>
+    </div>
+  </footer>
+
+  <!-- ================= JAVASCRIPT ENGINE ================= -->
+  <script>
+    const DEFAULT_MOTIFS = [
+      { 
+        id: 'm-1', 
+        name: 'Poppie', 
+        image: 'poppie.jpg', 
+        fallback: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-poppie', 
+        btnColor: '#FFAEC9', 
+        desc: 'Dasar putih bersih polkadot hitam dengan kancing pastel pink.', 
+        stock: 12 
+      },
+      { 
+        id: 'm-2', 
+        name: 'Midnight', 
+        image: 'midnight.jpeg', 
+        fallback: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-midnight', 
+        btnColor: '#73D7C8', 
+        desc: 'Hitam tegas polkadot putih kontras dengan kancing toska cerah.', 
+        stock: 9 
+      },
+      { 
+        id: 'm-3', 
+        name: 'Oreo Cookies', 
+        image: 'oreo.jpeg', 
+        fallback: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-oreo', 
+        btnColor: '#FFAEC9', 
+        desc: 'Cokelat manis dengan bintik rapat & kancing pink pastel.', 
+        stock: 11 
+      },
+      { 
+        id: 'm-4', 
+        name: 'Pink Candy', 
+        image: 'candy.jpeg', 
+        fallback: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-pinkcandy', 
+        btnColor: '#FFFFFF', 
+        desc: 'Merah muda pastel ceria dengan aksen kancing putih susu.', 
+        stock: 15 
+      },
+      { 
+        id: 'm-5', 
+        name: 'White Strawberry', 
+        image: 'whitestr.jpg', 
+        fallback: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-strawberry', 
+        btnColor: '#7AD3FF', 
+        desc: 'Putih bintik merah ceria dengan kancing biru pastel.', 
+        stock: 8 
+      },
+      { 
+        id: 'm-6', 
+        name: 'Blue Mist', 
+        image: 'bluem.jpeg', 
+        fallback: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-bluemist', 
+        btnColor: '#7AD3FF', 
+        desc: 'Garis biru muda pastel segar dengan kancing senada.', 
+        stock: 14 
+      },
+      { 
+        id: 'm-7', 
+        name: 'Green Lime', 
+        image: 'greenl.jpeg', 
+        fallback: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-greenlime', 
+        btnColor: '#FFA6C9', 
+        desc: 'Garis hijau sage aesthetic dengan kancing soft pink.', 
+        stock: 10 
+      },
+      { 
+        id: 'm-8', 
+        name: 'Honeypop', 
+        image: 'honey.jpeg', 
+        fallback: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80',
+        cssClass: 'pat-honeypop', 
+        btnColor: '#FFA6C9', 
+        desc: 'Garis krem netral earthy dengan kancing pastel pink.', 
+        stock: 13 
+      }
+    ];
+
+    const DEFAULT_SETTINGS = {
+      brandName: "RAY'S PROJECT",
+      tagline: "Cable Organizer",
+      logo: "logo.png",
+      whatsapp: "62895704261013",
+      instagram: "cableorganizer_",
+      banner: "UPCYCLED TEXTILE ESSENTIALS • FINAL BATCH",
+      estText: "HANDMADE // 2026",
+      adminUser: "admin@cableorganizer.id",
+      adminPass: "admin12345"
+    };
+
+    const DEFAULT_TESTIMONIALS = [
+      { name: 'Naya', role: 'Mahasiswi UI', comment: 'Kabel charger iPhone di dalam tas nggak pernah kusut lagi! Ditambah loncengnya bikin gampang dicari pas tas penuh.' },
+      { name: 'Zaskia', role: 'Mahasiswi PNJ', comment: 'Suka sama konsepnya. Jahitan rapi, kancing snap-nya kencang, motif Poppie paling oke!' },
+      { name: 'Compa', role: 'Mahasiswa UI', comment: 'Ambil bundle lengkapnya cuma nambah sedikit udah dapat lonceng pita perak. Lumayan bisa buat hadiah!' }
+    ];
+
+    function getDB(k, fallback) {
+      try { const d = localStorage.getItem('co_nord_' + k); return d ? JSON.parse(d) : fallback; } catch (e) { return fallback; }
+    }
+    function setDB(k, v) {
+      try { localStorage.setItem('co_nord_' + k, JSON.stringify(v)); } catch (e) {}
+    }
+
+    let MOTIFS = DEFAULT_MOTIFS; 
+    let SETTINGS = getDB('settings', DEFAULT_SETTINGS);
+    let ORDERS = getDB('orders', []);
+    let CART = getDB('cart', []);
+
+    let selectedMotifIndex = 0;
+    let isAddonChecked = false;
+
+    let revenueChartInstance = null;
+    let motifChartInstance = null;
+
+    function formatRp(val) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      t.classList.remove('translate-y-32', 'opacity-0');
+      setTimeout(() => t.classList.add('translate-y-32', 'opacity-0'), 3000);
+    }
+
+    // --- NAVIGATION ---
+    function navigate(route) {
+      document.querySelectorAll('.page-view').forEach(p => p.classList.add('hidden'));
+      const target = document.getElementById('page-' + route);
+      if (target) target.classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (route === 'shop') renderMotifSelector();
+      if (route === 'cart') renderCart();
+      if (route === 'checkout') renderCheckoutSummary();
+      if (route === 'home') renderTestimonials();
+    }
+
+    // --- SHOP LOGIC ---
+    function renderMotifSelector() {
+      const grid = document.getElementById('motifSelectorGrid');
+      grid.innerHTML = MOTIFS.map((m, idx) => `
+        <button 
+          type="button"
+          onclick="selectMotif(${idx})" 
+          class="p-3 border text-left transition-all ${selectedMotifIndex === idx ? 'border-nord-dark bg-nord-linen ring-1 ring-nord-dark shadow-sm' : 'border-nord-border bg-nord-pure hover:border-stone-400'}"
+        >
+          <div class="h-10 ${m.cssClass} border border-nord-border relative flex items-center justify-center mb-2">
+            <span class="w-3.5 h-3.5 rounded-full border border-black/40" style="background-color: ${m.btnColor}"></span>
+          </div>
+          <div class="font-serif text-sm font-normal text-nord-dark truncate">${m.name}</div>
+          <span class="text-[10px] text-nord-muted tracking-wider block mt-0.5">${m.stock > 0 ? `Stock: ${m.stock}` : '<b class="text-stone-900 font-semibold">[Sold Out]</b>'}</span>
+        </button>
+      `).join('');
+
+      updateSelectedMotifDisplay();
+    }
+
+    function selectMotif(idx) {
+      selectedMotifIndex = idx;
+      renderMotifSelector();
+    }
+
+    function updateSelectedMotifDisplay() {
+      const cur = MOTIFS[selectedMotifIndex];
+      if (!cur) return;
+
+      document.getElementById('selectedMotifLabel').innerText = cur.name;
+      document.getElementById('selectedMotifDesc').innerText = cur.desc;
+      
+      const badgeElem = document.getElementById('motifBadgeTag');
+      if (badgeElem) badgeElem.innerText = cur.name;
+
+      const imgElem = document.getElementById('shopOrganizerImg');
+      if (imgElem) {
+        imgElem.style.opacity = '0.4';
+        const tempImg = new Image();
+        tempImg.src = cur.image;
+        
+        tempImg.onload = function() {
+          imgElem.src = cur.image;
+          imgElem.style.opacity = '1';
+        };
+        
+        tempImg.onerror = function() {
+          imgElem.src = cur.fallback || 'produk.jpeg';
+          imgElem.style.opacity = '1';
+        };
+      }
+    }
+
+    function toggleKeychainAddon() {
+      isAddonChecked = document.getElementById('addonKeychainCheckbox').checked;
+      const priceDisplay = document.getElementById('priceDisplayOrganizer');
+      const strikeDisplay = document.getElementById('originalPriceStrike');
+      const btnText = document.getElementById('btnOrganizerText');
+
+      if (isAddonChecked) {
+        priceDisplay.innerText = 'Rp12.000';
+        strikeDisplay.classList.remove('hidden');
+        btnText.innerText = 'Add Bundle to Bag — Rp12.000';
+      } else {
+        priceDisplay.innerText = 'Rp9.000';
+        strikeDisplay.classList.add('hidden');
+        btnText.innerText = 'Add to Bag — Rp9.000';
+      }
+    }
+
+    function addOrganizerToCart() {
+      const motif = MOTIFS[selectedMotifIndex];
+      if (motif.stock <= 0) {
+        showToast(`Maaf, stok motif ${motif.name} sedang habis!`);
+        return;
+      }
+
+      const itemName = isAddonChecked 
+        ? `Cable Organizer (${motif.name}) + Bell Keychain`
+        : `Cable Organizer (${motif.name})`;
+      
+      const itemPrice = isAddonChecked ? 12000 : 9000;
+
+      const existing = CART.find(c => c.name === itemName && c.motifId === motif.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        CART.push({
+          id: 'item-' + Date.now(),
+          motifId: motif.id,
+          name: itemName,
+          motifName: motif.name,
+          image: motif.image,
+          price: itemPrice,
+          hasAddon: isAddonChecked,
+          quantity: 1
+        });
+      }
+
+      setDB('cart', CART);
+      updateCartBadge();
+      showToast(`${itemName} added to bag.`);
+    }
+
+    function addKeychainToCart() {
+      const itemName = 'Ribbon & Bell Keychain Charm';
+      const existing = CART.find(c => c.name === itemName);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        CART.push({
+          id: 'keychain-' + Date.now(),
+          motifId: null,
+          name: itemName,
+          motifName: 'Silver Bell Charm',
+          image: 'gancc.jpg',
+          price: 5000,
+          hasAddon: false,
+          quantity: 1
+        });
+      }
+
+      setDB('cart', CART);
+      updateCartBadge();
+      showToast('Keychain Charm added to bag.');
+    }
+
+    function updateCartBadge() {
+      const total = CART.reduce((acc, c) => acc + c.quantity, 0);
+      document.getElementById('cartCountBadge').innerText = total;
+    }
+
+    // --- CART LOGIC ---
+    function renderCart() {
+      const empty = document.getElementById('cartEmptyState');
+      const wrapper = document.getElementById('cartContentWrapper');
+      const list = document.getElementById('cartItemsList');
+
+      if (CART.length === 0) {
+        empty.classList.remove('hidden');
+        wrapper.classList.add('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      wrapper.classList.remove('hidden');
+
+      list.innerHTML = CART.map((c, idx) => `
+        <div class="nord-card p-5 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <img src="${c.image || 'produk.jpeg'}" onerror="this.src='produk.jpeg'" class="w-14 h-14 object-cover border border-nord-border bg-[#EAE6DD]" alt="${c.name}">
+            <div>
+              <div class="font-serif text-lg font-normal text-nord-dark">${c.name}</div>
+              <div class="text-[11px] text-nord-muted">Pattern: <strong class="text-nord-dark font-medium">${c.motifName}</strong></div>
+              <div class="text-xs text-nord-dark font-semibold mt-1">${formatRp(c.price)} / pcs</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-xs">
+            <div class="flex items-center border border-nord-border bg-nord-linen">
+              <button onclick="changeCartQty(${idx}, -1)" class="px-3 py-1 text-nord-dark hover:bg-stone-200">-</button>
+              <span class="px-2 font-medium">${c.quantity}</span>
+              <button onclick="changeCartQty(${idx}, 1)" class="px-3 py-1 text-nord-dark hover:bg-stone-200">+</button>
+            </div>
+            <button onclick="removeCartItem(${idx})" class="text-stone-400 hover:text-nord-dark text-xs uppercase tracking-wider font-semibold">Remove</button>
+          </div>
+        </div>
+      `).join('');
+
+      const sub = CART.reduce((acc, c) => acc + (c.price * c.quantity), 0);
+      document.getElementById('cartSubtotalText').innerText = formatRp(sub);
+      document.getElementById('cartGrandTotalText').innerText = formatRp(sub);
+    }
+
+    function changeCartQty(idx, delta) {
+      CART[idx].quantity += delta;
+      if (CART[idx].quantity <= 0) CART.splice(idx, 1);
+      setDB('cart', CART);
+      updateCartBadge();
+      renderCart();
+    }
+
+    function removeCartItem(idx) {
+      CART.splice(idx, 1);
+      setDB('cart', CART);
+      updateCartBadge();
+      renderCart();
+      showToast('Item removed from bag');
+    }
+
+    // --- CHECKOUT LOGIC ---
+    function renderCheckoutSummary() {
+      const list = document.getElementById('checkoutItemsList');
+      list.innerHTML = CART.map(c => `
+        <div class="flex justify-between items-center pb-2 border-b border-nord-border/50 text-xs">
+          <div><span class="text-nord-dark">${c.name}</span> <span class="text-stone-400">&times; ${c.quantity}</span></div>
+          <span class="font-medium text-nord-dark">${formatRp(c.price * c.quantity)}</span>
+        </div>
+      `).join('');
+
+      const sub = CART.reduce((acc, c) => acc + (c.price * c.quantity), 0);
+      document.getElementById('chkSubtotal').innerText = formatRp(sub);
+      document.getElementById('chkGrandTotal').innerText = formatRp(sub);
+    }
+
+    function handlePlaceOrder(e) {
+      e.preventDefault();
+      if (CART.length === 0) {
+        showToast('Keranjang belanjamu kosong!');
+        navigate('shop');
+        return;
+      }
+
+      const name = document.getElementById('c_name').value;
+      const wa = document.getElementById('c_wa').value;
+      const address = document.getElementById('c_address').value;
+      const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+      const sub = CART.reduce((acc, c) => acc + (c.price * c.quantity), 0);
+
+      const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+
+      const newOrder = {
+        orderId,
+        date: new Date().toLocaleDateString('id-ID'),
+        customer: { name, wa, address },
+        items: [...CART],
+        total: sub,
+        payMethod,
+        status: 'Awaiting Payment'
+      };
+
+      CART.forEach(item => {
+        if (item.motifId) {
+          const m = MOTIFS.find(motif => motif.id === item.motifId);
+          if (m) m.stock = Math.max(0, m.stock - item.quantity);
+        }
+      });
+      setDB('motifs', MOTIFS);
+
+      ORDERS.unshift(newOrder);
+      setDB('orders', ORDERS);
+
+      CART = [];
+      setDB('cart', CART);
+      updateCartBadge();
+
+      // Setup Confirmation Page
+      document.getElementById('confOrderId').innerText = orderId;
+      document.getElementById('confTotalPay').innerText = formatRp(sub);
+      document.getElementById('confPaymentInstructions').innerHTML = `
+        <p>Metode Pembayaran: <strong class="text-nord-dark">${payMethod}</strong></p>
+        <p>Total Tagihan Produk: <strong class="text-nord-dark">${formatRp(sub)}</strong></p>
+        <p>Alamat / Lokasi: <span class="text-nord-muted">${address}</span></p>
+        <p class="pt-2 text-stone-500">* Free ongkir untuk area sekitar PNJ. Untuk pengiriman di luar PNJ, admin akan menambahkan rincian ongkir saat konfirmasi WhatsApp.</p>
+      `;
+
+      const waMsg = `Halo ${SETTINGS.brandName}! Saya mau konfirmasi pesanan *${orderId}*.%0A- Nama: ${name}%0A- Total Produk: ${formatRp(sub)}%0A- Metode Bayar: ${payMethod}%0A- Alamat/Lokasi: ${address}%0AMohon info verifikasi & total ongkir (jika di luar PNJ) ya! Terima kasih.`;
+      document.getElementById('confWaBtn').href = `https://wa.me/${SETTINGS.whatsapp}?text=${waMsg}`;
+
+      navigate('confirmation');
+      showToast('Order completed successfully.');
+    }
+
+    // --- FAQ ACCORDION ---
+    function renderTestimonials() {
+      const box = document.getElementById('homeTestimonialsGrid');
+      box.innerHTML = DEFAULT_TESTIMONIALS.map((r, i) => `
+        <div class="bg-nord-pure p-8 border border-nord-border space-y-4 flex flex-col justify-between">
+          <p class="font-serif text-lg font-normal text-nord-dark leading-relaxed italic">"${r.comment}"</p>
+          <div class="pt-4 border-t border-nord-border">
+            <div class="font-semibold text-xs tracking-wider uppercase text-nord-dark">${r.name}</div>
+            <div class="text-[10px] tracking-widest uppercase text-nord-muted mt-0.5">${r.role}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleFaq(num) {
+      const b = document.getElementById('faq-body-' + num);
+      const i = document.getElementById('faq-icon-' + num);
+      if (b.classList.contains('hidden')) {
+        b.classList.remove('hidden');
+        i.innerText = '—';
+      } else {
+        b.classList.add('hidden');
+        i.innerText = '+';
+      }
+    }
+
+    // --- ADMIN DASHBOARD & 2 GRAFIK ELEGAN (CHART.JS) ---
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('adminUser').value.trim();
+      const p = document.getElementById('adminPass').value.trim();
+      
+      const validUser = (SETTINGS && SETTINGS.adminUser) ? SETTINGS.adminUser : "admin@cableorganizer.id";
+      const validPass = (SETTINGS && SETTINGS.adminPass) ? SETTINGS.adminPass : "admin12345";
+      
+      if (u === validUser && p === validPass) {
+        document.getElementById('adminLoginBox').classList.add('hidden');
+        document.getElementById('adminPanelBox').classList.remove('hidden');
+        renderAdmin();
+        showToast('Welcome back, Admin.');
+      } else {
+        showToast('Kredensial login salah!');
+      }
+    }
+
+    function handleAdminLogout() {
+      document.getElementById('adminLoginBox').classList.remove('hidden');
+      document.getElementById('adminPanelBox').classList.add('hidden');
+      showToast('Logged out.');
+    }
+
+    function switchAdminTab(t) {
+      ['dash', 'motifs', 'orders', 'settings'].forEach(tab => {
+        document.getElementById('adm-view-' + tab).classList.add('hidden');
+        document.getElementById('atab-' + tab).className = 'px-4 py-2 border border-nord-border bg-nord-pure text-nord-dark hover:border-nord-dark';
+      });
+      document.getElementById('adm-view-' + t).classList.remove('hidden');
+      document.getElementById('atab-' + t).className = 'px-4 py-2 border border-nord-dark bg-nord-dark text-nord-linen';
+
+      if (t === 'dash') renderAdmin();
+      if (t === 'motifs') renderAdminMotifsTable();
+      if (t === 'orders') renderAdminOrdersTable();
+      if (t === 'settings') renderAdminSettingsForm();
+    }
+
+    function renderAdmin() {
+      const revenue = ORDERS.reduce((a, o) => a + (o.status !== 'Cancelled' ? o.total : 0), 0);
+      const stock = MOTIFS.reduce((a, m) => a + Number(m.stock), 0);
+
+      document.getElementById('statRevenue').innerText = formatRp(revenue);
+      document.getElementById('statOrders').innerText = ORDERS.length;
+      document.getElementById('statStock').innerText = stock + ' pcs';
+
+      const revBadge = document.getElementById('chartRevenueTotalBadge');
+      if (revBadge) revBadge.innerText = 'Total: ' + formatRp(revenue);
+
+      renderAdminCharts();
+    }
+
+    function renderAdminCharts() {
+      const dateMap = {};
+      const activeOrders = ORDERS.filter(o => o.status !== 'Cancelled');
+      
+      if (activeOrders.length === 0) {
+        dateMap['Hari Ini'] = 0;
+      } else {
+        activeOrders.forEach(o => {
+          const d = o.date || 'Hari Ini';
+          dateMap[d] = (dateMap[d] || 0) + (o.total || 0);
+        });
+      }
+
+      const revLabels = Object.keys(dateMap);
+      const revData = Object.values(dateMap);
+
+      const ctxRev = document.getElementById('revenueChartCanvas');
+      if (ctxRev) {
+        if (revenueChartInstance) revenueChartInstance.destroy();
+
+        revenueChartInstance = new Chart(ctxRev, {
+          type: 'line',
+          data: {
+            labels: revLabels,
+            datasets: [{
+              label: 'Omzet',
+              data: revData,
+              borderColor: '#0F0F0F',
+              backgroundColor: 'rgba(15, 15, 15, 0.05)',
+              borderWidth: 2,
+              pointBackgroundColor: '#0F0F0F',
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              fill: true,
+              tension: 0.35
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#0F0F0F',
+                titleFont: { family: 'Plus Jakarta Sans', size: 11 },
+                bodyFont: { family: 'Plus Jakarta Sans', size: 12, weight: 'bold' },
+                padding: 10,
+                cornerRadius: 0,
+                callbacks: {
+                  label: function(context) {
+                    return 'Omzet: ' + formatRp(context.raw);
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: '#ECE8DF', drawBorder: false },
+                ticks: { font: { family: 'Plus Jakarta Sans', size: 10 }, color: '#73706A' }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: '#ECE8DF', drawBorder: false },
+                ticks: {
+                  font: { family: 'Plus Jakarta Sans', size: 10 },
+                  color: '#73706A',
+                  callback: function(value) {
+                    return 'Rp' + (value >= 1000 ? (value / 1000) + 'k' : value);
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const motifSalesMap = {};
+      MOTIFS.forEach(m => { motifSalesMap[m.name] = 0; });
+
+      activeOrders.forEach(o => {
+        if (o.items && Array.isArray(o.items)) {
+          o.items.forEach(it => {
+            if (it.motifName && motifSalesMap.hasOwnProperty(it.motifName)) {
+              motifSalesMap[it.motifName] += (it.quantity || 1);
+            }
+          });
+        }
+      });
+
+      const motifLabels = Object.keys(motifSalesMap);
+      const motifCounts = Object.values(motifSalesMap);
+
+      const ctxMotif = document.getElementById('motifChartCanvas');
+      if (ctxMotif) {
+        if (motifChartInstance) motifChartInstance.destroy();
+
+        motifChartInstance = new Chart(ctxMotif, {
+          type: 'bar',
+          data: {
+            labels: motifLabels,
+            datasets: [{
+              label: 'Unit Terjual',
+              data: motifCounts,
+              backgroundColor: '#1A1A1A',
+              hoverBackgroundColor: '#0F0F0F',
+              borderRadius: 0,
+              barThickness: 12
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#0F0F0F',
+                titleFont: { family: 'Plus Jakarta Sans', size: 11 },
+                bodyFont: { family: 'Plus Jakarta Sans', size: 12, weight: 'bold' },
+                padding: 10,
+                cornerRadius: 0,
+                callbacks: {
+                  label: function(context) {
+                    return context.raw + ' pcs diadopsi';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: { color: '#ECE8DF', drawBorder: false },
+                ticks: { font: { family: 'Plus Jakarta Sans', size: 10 }, color: '#73706A', precision: 0 }
+              },
+              y: {
+                grid: { display: false },
+                ticks: { font: { family: 'Plus Jakarta Sans', size: 10 }, color: '#0F0F0F' }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function renderAdminMotifsTable() {
+      document.getElementById('adminMotifsTable').innerHTML = `
+        <thead><tr class="border-b border-nord-border text-nord-muted uppercase tracking-wider text-[10px]"><th>MOTIF</th><th>DESKRIPSI</th><th>STOK</th><th>AKSI STOK</th></tr></thead>
+        <tbody>
+          ${MOTIFS.map((m, idx) => `
+            <tr class="border-b border-nord-border/50 py-3">
+              <td class="font-serif text-sm font-normal py-3 text-nord-dark">${m.name}</td>
+              <td class="text-nord-muted">${m.desc}</td>
+              <td class="font-semibold ${m.stock <= 0 ? 'text-stone-400' : 'text-nord-dark'}">${m.stock} pcs</td>
+              <td>
+                <button onclick="changeStock(${idx}, 1)" class="px-2 py-0.5 border border-nord-border bg-nord-linen hover:bg-stone-200 text-xs font-bold mr-1">+</button>
+                <button onclick="changeStock(${idx}, -1)" class="px-2 py-0.5 border border-nord-border bg-nord-linen hover:bg-stone-200 text-xs font-bold">-</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+    }
+
+    function renderAdminOrdersTable() {
+      const oTbl = document.getElementById('adminOrdersTable');
+      if (ORDERS.length === 0) {
+        oTbl.innerHTML = `<tr><td class="py-6 text-center text-nord-muted">Belum ada pesanan masuk.</td></tr>`;
+      } else {
+        oTbl.innerHTML = `
+          <thead><tr class="border-b border-nord-border text-nord-muted uppercase tracking-wider text-[10px]"><th>ID</th><th>NAMA / WA</th><th>ALAMAT</th><th>TOTAL</th><th>STATUS</th></tr></thead>
+          <tbody>
+            ${ORDERS.map((o, idx) => `
+              <tr class="border-b border-nord-border/50 py-3">
+                <td class="font-mono text-xs font-bold py-3 text-nord-dark">${o.orderId}<br><span class="text-[10px] text-stone-400 font-sans font-normal">${o.date}</span></td>
+                <td>${o.customer.name}<br><span class="text-stone-400">${o.customer.wa}</span></td>
+                <td class="text-xs text-nord-muted max-w-xs">${o.customer.address}</td>
+                <td class="font-serif text-base text-nord-dark">${formatRp(o.total)}</td>
+                <td>
+                  <select onchange="updateOrderStatus(${idx}, this.value)" class="border border-nord-border bg-nord-linen p-1 text-[11px]">
+                    <option ${o.status === 'Awaiting Payment' ? 'selected' : ''}>Awaiting Payment</option>
+                    <option ${o.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                    <option ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                    <option ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    <option ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                  </select>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        `;
+      }
+    }
+
+    function changeStock(idx, val) {
+      MOTIFS[idx].stock = Math.max(0, MOTIFS[idx].stock + val);
+      setDB('motifs', MOTIFS);
+      renderAdminMotifsTable();
+      renderAdmin();
+    }
+
+    function updateOrderStatus(idx, s) {
+      ORDERS[idx].status = s;
+      setDB('orders', ORDERS);
+      showToast('Status pesanan diperbarui');
+      renderAdmin();
+    }
+
+    function renderAdminSettingsForm() {
+      document.getElementById('set_brand').value = SETTINGS.brandName;
+      document.getElementById('set_tagline').value = SETTINGS.tagline;
+      document.getElementById('set_wa').value = SETTINGS.whatsapp;
+      document.getElementById('set_ig').value = SETTINGS.instagram;
+      document.getElementById('set_logo').value = SETTINGS.logo;
+      document.getElementById('set_est').value = SETTINGS.estText || "HANDMADE // 2026";
+      document.getElementById('set_banner').value = SETTINGS.banner;
+      document.getElementById('set_admin_user').value = SETTINGS.adminUser;
+      document.getElementById('set_admin_pass').value = SETTINGS.adminPass;
+    }
+
+    function handleSaveSettings(e) {
+      e.preventDefault();
+      SETTINGS.brandName = document.getElementById('set_brand').value;
+      SETTINGS.tagline = document.getElementById('set_tagline').value;
+      SETTINGS.whatsapp = document.getElementById('set_wa').value;
+      SETTINGS.instagram = document.getElementById('set_ig').value;
+      SETTINGS.logo = document.getElementById('set_logo').value;
+      SETTINGS.estText = document.getElementById('set_est').value;
+      SETTINGS.banner = document.getElementById('set_banner').value;
+      
+      SETTINGS.adminUser = document.getElementById('set_admin_user').value;
+      SETTINGS.adminPass = document.getElementById('set_admin_pass').value;
+
+      setDB('settings', SETTINGS);
+      applySettingsToUI();
+      showToast('Seluruh pengaturan & kredensial admin diperbarui!');
+    }
+
+    function applySettingsToUI() {
+      document.getElementById('navBrandName').innerText = SETTINGS.brandName;
+      document.getElementById('navTagline').innerText = SETTINGS.tagline;
+      document.getElementById('topBarBanner').innerText = SETTINGS.banner;
+      document.getElementById('topBarEst').innerText = SETTINGS.estText || "HANDMADE // 2026";
+      document.getElementById('footerCopyBrand').innerText = SETTINGS.brandName.toUpperCase();
+      
+      document.getElementById('contactIgLink').innerText = '@' + SETTINGS.instagram;
+      document.getElementById('contactIgLink').href = 'https://instagram.com/' + SETTINGS.instagram;
+      document.getElementById('footerIg').innerText = '@' + SETTINGS.instagram;
+      document.getElementById('footerIg').href = 'https://instagram.com/' + SETTINGS.instagram;
+
+      document.getElementById('contactWaLink').innerText = '+' + SETTINGS.whatsapp;
+      document.getElementById('contactWaLink').href = 'https://wa.me/' + SETTINGS.whatsapp;
+      document.getElementById('footerWa').innerText = '+' + SETTINGS.whatsapp;
+      document.getElementById('footerWa').href = 'https://wa.me/' + SETTINGS.whatsapp;
+      document.getElementById('btnChatWa').href = 'https://wa.me/' + SETTINGS.whatsapp;
+
+      const mainLogo = document.getElementById('mainBrandLogo');
+      const footerLogo = document.getElementById('footerBrandLogo');
+      if (SETTINGS.logo) {
+        mainLogo.src = SETTINGS.logo;
+        footerLogo.src = SETTINGS.logo;
+      }
+    }
+
+    // INIT
+    window.addEventListener('DOMContentLoaded', () => {
+      applySettingsToUI();
+      updateCartBadge();
+      navigate('home');
+    });
+  </script>
+</body>
+</html>
